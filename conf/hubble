@@ -183,3 +183,12 @@ log_level: info
 #    - release: osrelease
 #  pillar:
 #    - ntpserver: network_services:ntpserver
+
+########################################################
+## Adding custom plugins for auditing rules
+########################################################
+# A plugin is a python file implementing the 'audit' function
+#custom_plugins_paths:
+#  - /opt/my_plugins_1
+#  - /opt/my_plugins_2
+

@@ -22,6 +22,7 @@ from salt.exceptions import CommandExecutionError
 from hubblestack import __version__
 from hubblestack.status import HubbleStatus
 
+
 log = logging.getLogger(__name__)
 
 hubble_status = HubbleStatus(__name__, 'top', 'audit')
@@ -624,7 +625,7 @@ def sync(clean=False):
     log.debug('syncing nova modules')
     nova_profile_dir = __salt__['config.get']('hubblestack:nova:profile_dir',
                                               'salt://hubblestack_nova_profiles')
-    _nova_module_dir, cached_profile_dir = _hubble_dir()
+    cached_profile_dir = _hubble_dir()[-1]
     saltenv = __salt__['config.get']('hubblestack:nova:saltenv', 'base')
 
     # Clean previously synced files
@@ -700,6 +701,9 @@ def _hubble_dir():
     nova_profile_dir = __salt__['config.get']('hubblestack:nova:profile_dir',
                                               'salt://hubblestack_nova_profiles')
     nova_module_dir = os.path.join(__opts__['install_dir'], 'files', 'hubblestack_nova')
+    modules_dirs = __opts__.get('custom_plugins_paths', [])
+    modules_dirs.append(nova_module_dir)
+
     # Support optional salt:// in config
     if 'salt://' in nova_profile_dir:
         _, _, nova_profile_dir = nova_profile_dir.partition('salt://')
@@ -708,8 +712,7 @@ def _hubble_dir():
                             'files',
                             saltenv,
                             nova_profile_dir)
-    dirs = [nova_module_dir, cachedir]
-    return tuple(dirs)
+    return tuple(modules_dirs + [cachedir])
 
 
 def _calculate_compliance(results):
@@ -733,7 +736,7 @@ def _get_top_data(topfile):
     """
     Helper method to retrieve and parse the nova topfile
     """
-    topfile = os.path.join(_hubble_dir()[1], topfile)
+    topfile = os.path.join(_hubble_dir()[-1], topfile)
 
     try:
         with open(topfile) as handle:
